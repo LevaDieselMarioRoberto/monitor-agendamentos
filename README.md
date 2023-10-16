@@ -1,3 +1,3 @@
 ## Criação do arquivo .exe:
 
-`pyinstaller .\monitora_agendamentos.spec`
+`pyinstaller --noconsole .\monitora_agendamentos.py`

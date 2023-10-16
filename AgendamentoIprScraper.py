@@ -16,19 +16,13 @@ from logging.handlers import TimedRotatingFileHandler
 
 class AgendamentoIprScraper:
 
-    # working_directory = os.getcwd()
-    # working_directory = os.path.dirname(os.path.abspath(__file__))
-    # log = os.path.join(working_directory, 'scraper.log')
-    # env = os.path.join(working_directory, '.env')
 
-    log = 'C:/Users/titrr/Documents/Projetos/monitor_agendamentos/dist/monitora_agendamentos/scraper.log'
-    env = 'C:/Users/titrr/Documents/Projetos/monitor_agendamentos/.env'
+    def __init__(self):
 
-    def data(self):
-        return datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        self.log = 'C:/Users/titrr/Documents/Projetos/monitor_agendamentos/dist/monitora_agendamentos/script.log'
+        self.env = 'C:/Users/titrr/Documents/Projetos/monitor_agendamentos/.env'
 
-
-    def inicializa_logger(self):
+        # Configurações de Log
         handler = TimedRotatingFileHandler(self.log, when="D", interval=1, backupCount=2, encoding='utf-8')
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', handlers=[handler])
 
@@ -36,8 +30,7 @@ class AgendamentoIprScraper:
         handler.suffix = "%Y%m%d.log"  # Adiciona a data no nome do arquivo
         handler.extMatch = r"^\d{8}\.log$"
 
-        logging.info('') # Linha em branco
-        info = f"{self.data()} Iniciando o scraper..."
+        info = f"Iniciando o scraper..."
         print(info)
         logging.info(info)
 
@@ -62,14 +55,14 @@ class AgendamentoIprScraper:
                 erro = f"Alguma variável não foi definida"
                 raise Exception(erro)
 
-            info = f"{self.data()} Variáveis de ambiente carregadas com sucesso"
+            info = f"Variáveis de ambiente carregadas com sucesso"
             logging.info(info)
             print(info)
             return []
         except Exception as e:
-            erro = f"{self.data()} Erro ao carregar as variáveis de ambiente: {e}"
-            logging.error(erro)
-            print(erro)
+            erro = f"Erro ao carregar as variáveis de ambiente"
+            logging.error(f"{erro}: {e}")
+            print(f"{erro}: {e}")
             return [erro]
 
 
@@ -89,14 +82,14 @@ class AgendamentoIprScraper:
             svc = EdgeService(EdgeChromiumDriverManager().install())
             self.navegador = webdriver.Edge(service=svc, options=self.options)
 
-            info = f"{self.data()} Navegador configurado com sucesso"
+            info = f"Navegador configurado com sucesso"
             logging.info(info)
             print(info)
             return []
         except Exception as e:
-            erro = f"{self.data()} Erro ao configurar o navegador: {e}"
-            logging.error(erro)
-            print(erro)
+            erro = f"Erro ao configurar o navegador"
+            logging.error(f"{erro}: {e}")
+            print(f"{erro}: {e}")
             return [erro]
 
 
@@ -108,14 +101,14 @@ class AgendamentoIprScraper:
                 WebDriverWait(self.navegador, self.tempo_espera).until(EC.presence_of_element_located((By.XPATH, self.XPATH_BUTTON_ENTRAR_IPR))).click()
                 WebDriverWait(self.navegador, self.tempo_espera).until(EC.presence_of_element_located((By.XPATH, self.XPATH_BUTTON_RIBPRETO_IPR))).click()
 
-                info = f"{self.data()} Acesso ao portal da Ipiranga realizado com sucesso"
+                info = f"Acesso ao portal da Ipiranga realizado com sucesso"
                 logging.info(info)
                 print(info)
                 return []
             except Exception as e:
-                erro = f"{self.data()} Erro ao acessar o portal da Ipiranga: {e}"
-                logging.error(erro)
-                print(erro)
+                erro = f"Erro ao acessar o portal da Ipiranga"
+                logging.error(f"{erro}: {e}")
+                print(f"{erro}: {e}")
                 return [erro]
 
 
@@ -125,7 +118,7 @@ class AgendamentoIprScraper:
         erros = []
 
         if dia == 'amanhã':
-            dia_seguinte_msg = f"{self.data()} Coletando agendamentos para amanhã..."
+            dia_seguinte_msg = f"Coletando agendamentos para amanhã..."
             print(dia_seguinte_msg)
             logging.info(dia_seguinte_msg)
 
@@ -138,18 +131,19 @@ class AgendamentoIprScraper:
             sleep(2)
             elements = self.navegador.find_elements(By.XPATH, self.XPATH_STATUS_IPR)
 
-            info = f"{self.data()} Quantidade de elementos de atualização de status: {len(elements)}"
+            info = f"Quantidade de elementos de atualização de status: {len(elements)}"
             logging.info(info)
             print(info)
         except Exception as e:
-            erro = f"{self.data()} Erro ao encontrar os elementos de atualização de status: {e}"
+            erro = f"Erro ao encontrar os elementos de atualização de status"
+            erros.append(erro)
+            erro += f": {e}"
             logging.error(erro)
             print(erro)
-            erros.append(erro)
             return pedidos, erros
 
         if elements == []:
-            print(f"{self.data()} Não há agendamentos disponíveis para {dia}")
+            print(f"Não há agendamentos disponíveis para {dia}")
         else:
             try:
                 contador = 0
@@ -158,14 +152,15 @@ class AgendamentoIprScraper:
                     contador += 1
                     sleep(2)
 
-                info = f"{self.data()} Elementos de atualização de status clicados com sucesso. Quantidade: {contador}"
+                info = f"Elementos de atualização de status clicados com sucesso. Quantidade: {contador}"
                 logging.info(info)
                 print(info)
             except Exception as e:
-                erro = f"{self.data()} Erro ao clicar nos elementos de atualização de status: {e}"
+                erro = f"Erro ao clicar nos elementos de atualização de status"
+                erros.append(erro)
+                erro += f": {e}"
                 logging.error(erro)
                 print(erro)
-                erros.append(erro)
                 return pedidos, erros
 
             try:
@@ -173,14 +168,15 @@ class AgendamentoIprScraper:
                 html_string = table.get_attribute('outerHTML')
                 html_io = StringIO(html_string)
 
-                info = f"{self.data()} Dados da tabela de agendamentos coletados com sucesso"
+                info = f"Dados da tabela de agendamentos coletados com sucesso"
                 logging.info(info)
                 print(info)
             except Exception as e:
-                erro = f"{self.data()} Erro ao coletar os dados da tabela de agendamentos: {e}"
+                erro = f"Erro ao coletar os dados da tabela de agendamentos: {e}"
+                erros.append(erro)
+                erro += f": {e}"
                 logging.error(erro)
                 print(erro)
-                erros.append(erro)
                 return pedidos, erros
 
             try:
@@ -191,19 +187,20 @@ class AgendamentoIprScraper:
                 df = df[df['Agendamentos', 'Placa'] != 'EZU0899']
                 size_df = len(df)
 
-                info = f"{self.data()} Dados da tabela de agendamentos convertidos para DataFrame com sucesso"
+                info = f"Dados da tabela de agendamentos convertidos para DataFrame com sucesso"
                 logging.info(info)
                 print(info)
 
                 if size_df_original != size_df:
-                    info = f"{self.data()} Linhas removidas do DataFrame (Placa EZU0899): {size_df_original - size_df}"
+                    info = f"Linhas removidas do DataFrame (Placa EZU0899): {size_df_original - size_df}"
                     logging.info(info)
                     print(info)
             except Exception as e:
-                erro = f"{self.data()} Erro ao converter os dados da tabela de agendamentos para DataFrame: {e}"
+                erro = f"Erro ao converter os dados da tabela de agendamentos para DataFrame: {e}"
+                erros.append(erro)
+                erro += f": {e}"
                 logging.error(erro)
                 print(erro)
-                erros.append(erro)
                 return pedidos, erros
 
             try:
@@ -217,10 +214,11 @@ class AgendamentoIprScraper:
                     print(pedido)
                     logging.info(pedido)
             except Exception as e:
-                erro = f"{self.data()} Erro ao percorrer o DataFrame: {e}"
+                erro = f"Erro ao percorrer o DataFrame: {e}"
+                erros.append(erro)
+                erro += f": {e}"
                 logging.error(erro)
                 print(erro)
-                erros.append(erro)
                 return pedidos, erros
 
         return pedidos, erros
@@ -250,21 +248,20 @@ class AgendamentoIprScraper:
                 result['amanha'], result['erros'] = self.scrap('amanhã')
                 if result['erros'] != []: return result
 
-                tempo_execucao = f"{self.data()} Tempo de execução da coleta: {round(time() - inicio, 2)} segundos"
+                tempo_execucao = f"Tempo de execução da coleta: {round(time() - inicio, 2)} segundos"
                 print(tempo_execucao)
                 logging.info(tempo_execucao)
             except Exception as e:
-                erro = f"{self.data()} Erro ao executar a coleta: {e}"
+                erro = f"Erro ao executar a coleta: {e}"
+                result['erros'].append(erro)
+                erro += f": {e}"
                 logging.error(erro)
                 print(erro)
-                result['erros'].append(erro)
 
         return result
 
 
 
 if __name__ == "__main__":
-
     scraper = AgendamentoIprScraper()
-    scraper.inicializa_logger()
     scraper.scrap_data(maximized=True)
