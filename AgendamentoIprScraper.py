@@ -172,7 +172,7 @@ class AgendamentoIprScraper:
                 logging.info(info)
                 print(info)
             except Exception as e:
-                erro = f"Erro ao coletar os dados da tabela de agendamentos: {e}"
+                erro = f"Erro ao coletar os dados da tabela de agendamentos"
                 erros.append(erro)
                 erro += f": {e}"
                 logging.error(erro)
@@ -196,7 +196,7 @@ class AgendamentoIprScraper:
                     logging.info(info)
                     print(info)
             except Exception as e:
-                erro = f"Erro ao converter os dados da tabela de agendamentos para DataFrame: {e}"
+                erro = f"Erro ao converter os dados da tabela de agendamentos para DataFrame"
                 erros.append(erro)
                 erro += f": {e}"
                 logging.error(erro)
@@ -214,7 +214,7 @@ class AgendamentoIprScraper:
                     print(pedido)
                     logging.info(pedido)
             except Exception as e:
-                erro = f"Erro ao percorrer o DataFrame: {e}"
+                erro = f"Erro ao percorrer o DataFrame"
                 erros.append(erro)
                 erro += f": {e}"
                 logging.error(erro)
@@ -252,7 +252,7 @@ class AgendamentoIprScraper:
                 print(tempo_execucao)
                 logging.info(tempo_execucao)
             except Exception as e:
-                erro = f"Erro ao executar a coleta: {e}"
+                erro = f"Erro ao executar a coleta"
                 result['erros'].append(erro)
                 erro += f": {e}"
                 logging.error(erro)
