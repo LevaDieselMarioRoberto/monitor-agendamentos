@@ -208,9 +208,11 @@ class AgendamentoIprScraper:
                     id = row['Agendamentos', 'ID']
                     horario = row['Agendamentos', 'Horário']
                     status = row['Agendamentos', 'Status']
-
                     pedido = f"🆔: {id}, ⏱️: {horario}, 📝: {status}"
-                    pedidos.append(pedido)
+
+                    status_ok = ['Faturado/Carregado', 'Agendamento Liberado']
+                    if status not in status_ok: pedidos.append(pedido)
+
                     print(pedido)
                     logging.info(pedido)
             except Exception as e:

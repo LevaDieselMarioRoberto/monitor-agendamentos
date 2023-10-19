@@ -1,6 +1,7 @@
 from AgendamentoIprScraper import AgendamentoIprScraper
 from Telegram import Telegram
 from datetime import datetime, timedelta
+from time import sleep
 import json
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -31,6 +32,17 @@ def monitora_agendamentos():
     pedidos = scraper_ipr.scrap_data()
     # pedidos = scraper_ipr.scrap_data(maximized=True)
 
+    if pedidos['erros'] != []:
+        mensagem = f"⚠️ Erro no script: {pedidos['erros'][0]}"
+        logging.error(mensagem)
+        for i in range(1):
+            logging.info(f'Nova tentativa ({i+1}/2) em 30 segundos...')
+            sleep(30)
+            pedidos = scraper_ipr.scrap_data()
+            if pedidos['erros'] == []:
+                break
+
+
     try:
         with open(arquivo_json, 'r') as infile:
             pedidos_json = json.load(infile)
@@ -42,62 +54,73 @@ def monitora_agendamentos():
             pedidos_json = json.load(infile)
 
 
-    if pedidos['erros'] == [] and pedidos_json['erros'] != []:
+    if pedidos['erros'] != [] and pedidos['erros'] != pedidos_json['erros']:
+        mensagem = '⚠️ Erro no script:'
+
+        for pedido in pedidos['erros']: mensagem += f'\n{pedido}'
+
+        telegram.enviarMensagem(mensagem)
+        logging.error(f'{pedidos["erros"][0]}')
+        pedidos_json['erros'] = pedidos['erros']
+
+    elif pedidos['erros'] == [] and pedidos_json['erros'] != []:
         mensagem = '✅ Script funcionando normalmente!'
         telegram.enviarMensagem(mensagem)
         logging.info(mensagem)
-
         pedidos_json['erros'] = []
-        with open(arquivo_json, 'w') as outfile:
-            json.dump(pedidos_json, outfile)
 
 
-    if pedidos['erros'] != [] and pedidos['erros'] != pedidos_json['erros']:
-        mensagem = '⚠️ Erro no script: \n'
-        mensagem += pedidos['erros'][0]
+    if pedidos['hoje'] != [] and pedidos['hoje'] != pedidos_json['hoje']:
+        hoje = datetime.now().strftime("%d/%m/%Y")
+        mensagem = f'⛽ Pedidos {hoje}:'
+
+        for pedido in pedidos['hoje']: mensagem += f'\n{pedido}'
+
         telegram.enviarMensagem(mensagem)
-        logging.error(f'{pedidos["erros"][0]}')
+        logging.info(f'Alteração nos pedidos de hoje:')
+        logging.info(f'Novo: {pedidos["hoje"]}')
+        logging.info(f'Antigo: {pedidos_json["hoje"]}')
 
-        pedidos_json['erros'] = pedidos['erros']
-        with open(arquivo_json, 'w') as outfile:
-            json.dump(pedidos_json, outfile)
+    elif pedidos['hoje'] == [] and pedidos_json['hoje'] != []:
+        hoje = datetime.now().strftime("%d/%m/%Y")
+        mensagem = f'⛽ Pedidos {hoje}:'
+        mensagem += f'\n✅ Pedidos sem restrição'
+
+        telegram.enviarMensagem(mensagem)
+        logging.info(f'Pedidos sem restrição')
 
     else:
-        if pedidos['hoje'] != [] and pedidos['hoje'] != pedidos_json['hoje']:
-            hoje = datetime.now().strftime("%d/%m/%Y")
-            mensagem = f'⛽ Pedidos {hoje}: \n'
-
-            for pedido in pedidos['hoje']:
-                mensagem += f'\n{pedido}'
-
-            telegram.enviarMensagem(mensagem)
-            logging.info(f'Alteração nos pedidos de hoje:')
-            logging.info(f'Novo: {pedidos["hoje"]}')
-            logging.info(f'Antigo: {pedidos_json["hoje"]}')
-            pedidos_json['hoje'] = pedidos['hoje']
-        else:
-            logging.info(f'Sem alteração nos pedidos de hoje')
+        logging.info(f'Sem erros nos pedidos de hoje')
 
 
-        if pedidos['amanha'] != [] and pedidos['amanha'] != pedidos_json['amanha']:
-            amanha = (datetime.now() + timedelta(days=1)).strftime("%d/%m/%Y")
-            mensagem = f'⛽ Pedidos {amanha}: \n'
+    if pedidos['amanha'] != [] and pedidos['amanha'] != pedidos_json['amanha']:
+        amanha = (datetime.now() + timedelta(days=1)).strftime("%d/%m/%Y")
+        mensagem = f'⛽ Pedidos {amanha}:'
 
-            for pedido in pedidos['amanha']:
-                mensagem += f'\n{pedido}'
+        for pedido in pedidos['amanha']: mensagem += f'\n{pedido}'
 
-            telegram.enviarMensagem(mensagem)
-            logging.info(f'Alteração nos pedidos de amanhã:')
-            logging.info(f'Novo: {pedidos["amanha"]}')
-            logging.info(f'Antigo: {pedidos_json["amanha"]}')
-            pedidos_json['amanha'] = pedidos['amanha']
-        else:
-            logging.info(f'Sem alteração nos pedidos de amanhã')
+        telegram.enviarMensagem(mensagem)
+        logging.info(f'Alteração nos pedidos de amanhã:')
+        logging.info(f'Novo: {pedidos["amanha"]}')
+        logging.info(f'Antigo: {pedidos_json["amanha"]}')
 
-        with open(arquivo_json, 'w') as outfile:
-            json.dump(pedidos_json, outfile)
+    elif pedidos['amanha'] == [] and pedidos_json['amanha'] != []:
+        amanha = (datetime.now() + timedelta(days=1)).strftime("%d/%m/%Y")
+        mensagem = f'⛽ Pedidos {amanha}:'
+        mensagem += f'\n✅ Pedidos sem restrição'
 
-        logging.info(f'Script finalizado com sucesso!')
+        telegram.enviarMensagem(mensagem)
+        logging.info(f'Pedidos sem restrição')
+
+    else:
+        logging.info(f'Sem erros nos pedidos de amanhã')
+
+    pedidos_json['hoje'] = pedidos['hoje']
+    pedidos_json['amanha'] = pedidos['amanha']
+    with open(arquivo_json, 'w') as outfile:
+        json.dump(pedidos_json, outfile)
+
+    logging.info(f'Script finalizado com sucesso!')
 
 
 if __name__ == '__main__':
