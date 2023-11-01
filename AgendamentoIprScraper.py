@@ -3,6 +3,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.service import Service as EdgeService
+from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from time import sleep, time
 from datetime import datetime, timedelta
@@ -122,9 +123,23 @@ class AgendamentoIprScraper:
             print(dia_seguinte_msg)
             logging.info(dia_seguinte_msg)
 
-            amanha = datetime.now() + timedelta(days=1)
-            WebDriverWait(self.navegador, self.tempo_espera).until(EC.presence_of_element_located((By.XPATH, self.XPATH_BUTTON_CALENDARIO_IPR))).click()
-            WebDriverWait(self.navegador, self.tempo_espera).until(EC.presence_of_element_located((By.XPATH, f'//td[text()="{amanha.day}"]'))).click()
+            amanha = str((datetime.now() + timedelta(days=1)).day)
+
+            # Encontrar o input de data
+            input_data = self.navegador.find_element(By.ID, "data")
+
+            # Clicar no input para abrir o modal
+            input_data.click()
+
+            # Aguardar um curto período para garantir que o modal seja carregado
+            sleep(2)
+
+            # Encontrar o elemento correspondente ao dia no modal e clicar nele
+            elemento_data = self.navegador.find_element(By.XPATH, f'//td[text()="{amanha}"]')
+            actions = ActionChains(self.navegador)
+            actions.move_to_element(elemento_data).click().perform()
+
+            print(f"Definiu a data para o dia {amanha} no input")
             sleep(2)
 
         try:
@@ -150,7 +165,7 @@ class AgendamentoIprScraper:
                 for element in elements:
                     element.click()
                     contador += 1
-                    sleep(2)
+                    sleep(4)
 
                 info = f"Elementos de atualização de status clicados com sucesso. Quantidade: {contador}"
                 logging.info(info)
@@ -246,7 +261,7 @@ class AgendamentoIprScraper:
 
                 result['hoje'], result['erros'] = self.scrap('hoje')
                 if result['erros'] != []: return result
-                
+
                 result['amanha'], result['erros'] = self.scrap('amanhã')
                 if result['erros'] != []: return result
 
