@@ -126,4 +126,10 @@ def monitora_agendamentos():
 
 
 if __name__ == '__main__':
-    monitora_agendamentos()
+
+    hora = datetime.now().time()
+    hora_inicio = datetime.strptime('01:30', '%H:%M').time()
+    hora_fim = datetime.strptime('23:30', '%H:%M').time()
+
+    if hora >= hora_inicio and hora <= hora_fim:
+        monitora_agendamentos()

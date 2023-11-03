@@ -280,5 +280,11 @@ class AgendamentoIprScraper:
 
 
 if __name__ == "__main__":
-    scraper = AgendamentoIprScraper()
-    scraper.scrap_data(maximized=True)
+
+    hora = datetime.now().time()
+    hora_inicio = datetime.strptime('01:30', '%H:%M').time()
+    hora_fim = datetime.strptime('23:30', '%H:%M').time()
+
+    if hora >= hora_inicio and hora <= hora_fim:
+        scraper = AgendamentoIprScraper()
+        scraper.scrap_data(maximized=True)
