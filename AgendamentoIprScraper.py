@@ -199,7 +199,7 @@ class AgendamentoIprScraper:
                 df.drop([('Agendamentos', 'Unnamed: 0_level_1'), ('Agendamentos', 'Confirmado')], axis=1, inplace=True)
 
                 size_df_original = len(df)
-                df = df[df['Agendamentos', 'Placa'] != 'EZU0899']
+                df = df[~df['Agendamentos', 'Modelo C.  Placa'].str.contains('EZU0899')]
                 size_df = len(df)
 
                 info = f"Dados da tabela de agendamentos convertidos para DataFrame com sucesso"
