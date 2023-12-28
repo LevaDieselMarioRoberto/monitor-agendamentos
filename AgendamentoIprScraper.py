@@ -13,6 +13,7 @@ import pandas as pd
 from io import StringIO
 import logging
 from logging.handlers import TimedRotatingFileHandler
+from bs4 import BeautifulSoup
 
 
 class AgendamentoIprScraper:
@@ -49,6 +50,8 @@ class AgendamentoIprScraper:
             self.XPATH_BUTTON_CALENDARIO_IPR = os.getenv("XPATH_BUTTON_CALENDARIO_IPR")
             self.XPATH_STATUS_IPR = os.getenv("XPATH_STATUS_IPR")
             self.XPATH_TABLE_AGENDAMENTOS_IPR = os.getenv("XPATH_TABLE_AGENDAMENTOS_IPR")
+            self.XPATH_BUTTON_CALENDARIO_NEXTMONTH = os.getenv("XPATH_BUTTON_CALENDARIO_NEXTMONTH")
+            self.XPATH_CALENDARIO = os.getenv("XPATH_CALENDARIO")
             self.tempo_espera = 30
 
             # Verifica se as variáveis não são nulas
@@ -123,23 +126,33 @@ class AgendamentoIprScraper:
             print(dia_seguinte_msg)
             logging.info(dia_seguinte_msg)
 
-            amanha = str((datetime.now() + timedelta(days=1)).day)
-
-            # Encontrar o input de data
-            input_data = self.navegador.find_element(By.ID, "data")
-
-            # Clicar no input para abrir o modal
-            input_data.click()
-
-            # Aguardar um curto período para garantir que o modal seja carregado
+            # Encontrar o input de data e abrir o modal
+            self.navegador.find_element(By.ID, "data").click()
             sleep(2)
 
-            # Encontrar o elemento correspondente ao dia no modal e clicar nele
-            elemento_data = self.navegador.find_element(By.XPATH, f'//td[text()="{amanha}"]')
-            actions = ActionChains(self.navegador)
-            actions.move_to_element(elemento_data).click().perform()
-
+            amanha = str((datetime.now() + timedelta(days=1)).day)
             print(f"Definiu a data para o dia {amanha} no input")
+            if amanha == '1':
+                WebDriverWait(self.navegador, self.tempo_espera).until(EC.presence_of_element_located((By.XPATH, self.XPATH_BUTTON_CALENDARIO_NEXTMONTH))).click()
+                sleep(2)
+
+            html_calendario = self.navegador.find_element(By.XPATH, self.XPATH_CALENDARIO).get_attribute('outerHTML')
+            soup = BeautifulSoup(html_calendario, 'html.parser')    # Analisa o HTML
+
+            elemento_amanha = soup.find('td', string=str(amanha))
+
+            # Verifica se o elemento tem a classe "dp_not_in_month"
+            while elemento_amanha and 'dp_not_in_month' in elemento_amanha.get('class', []):
+                elemento_amanha = elemento_amanha.find_next('td', string=str(amanha))   # Procura pelo próximo elemento
+
+            # Obtém a posição do elemento do dia seguinte
+            tds_anteriores = elemento_amanha.find_all_previous('td')
+            posicao_td = (len(tds_anteriores) % 7) + 1
+            posicao_tr = (len(tds_anteriores) // 7) + 2
+
+            # Clica no dia seguinte
+            xpath_dia_seguinte = f'/html/body/div[8]/table[2]/tbody/tr[{posicao_tr}]/td[{posicao_td}]'
+            WebDriverWait(self.navegador, self.tempo_espera).until(EC.presence_of_element_located((By.XPATH, xpath_dia_seguinte))).click()
             sleep(2)
 
         try:
