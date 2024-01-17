@@ -1,6 +1,6 @@
 from AgendamentoIprScraper import AgendamentoIprScraper
 from Telegram import Telegram
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from time import sleep
 import json
 import logging
@@ -126,8 +126,21 @@ def monitora_agendamentos():
 
 
 if __name__ == '__main__':
-
+    
+    telegram = Telegram()
+    dia_semana = datetime.now().weekday()
     hora = datetime.now().time()
+    print(dia_semana, hora)
+
+    dez = hora > time(9, 55) and hora < time(10, 7)
+    cinco = hora > time(16, 55) and hora < time(17, 7)
+
+    print(dez, cinco)
+
+    if dia_semana > 4:      # Sábado ou Domingo
+        if dez or cinco:    # 10h ou 17h
+            telegram.enviarMensagem('Verificação de internet/energia ✅')
+
     hora_inicio = datetime.strptime('01:30', '%H:%M').time()
     hora_fim = datetime.strptime('23:30', '%H:%M').time()
 

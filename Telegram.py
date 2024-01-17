@@ -3,7 +3,7 @@ import requests
 class Telegram:
 
     token = '6549384225:AAEBaKjBcOcY8jL_g6A81L9wIprhQuSZJNY'
-    chat_id = -4066635565
+    chat_id = -1002086817983
     
     def enviarMensagem(self, msg):
         try:
