@@ -16,7 +16,7 @@ def main():
     current_time = now.time()
 
     # Verificação de internet/energia em sábados ou domingos às 10h e 18h
-    if weekday >= 5 and (time(9, 55) < current_time < time(10, 7) or time(16, 55) < current_time < time(18, 7)):
+    if weekday >= 5 and (time(9, 55) < current_time < time(10, 7) or time(17, 55) < current_time < time(18, 7)):
         telegram.enviar_mensagem('Verificação de internet/energia ✅')
 
     # Verificação de horário para execução do script
