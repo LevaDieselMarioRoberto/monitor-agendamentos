@@ -21,6 +21,7 @@ VAR = {
     'link': os.getenv("LINK_IPR"),
     'login': os.getenv("LOGIN_IPR"),
     'senha': os.getenv("SENHA_IPR"),
+    'link_filial_rp': os.getenv("LINK_FILIAL_RIBEIRAO"),
     'id_input_login': os.getenv("ID_INPUT_LOGIN_IPR"),
     'id_input_senha': os.getenv("ID_INPUT_SENHA_IPR"),
     'xpath_button_entrar': os.getenv("XPATH_BUTTON_ENTRAR_IPR"),
@@ -29,5 +30,6 @@ VAR = {
     'xpath_status': os.getenv("XPATH_STATUS_IPR"),
     'xpath_table_agendamentos': os.getenv("XPATH_TABLE_AGENDAMENTOS_IPR"),
     'xpath_button_calendario_nextmonth': os.getenv("XPATH_BUTTON_CALENDARIO_NEXTMONTH"),
+    'xpath_input_calendario': os.getenv("XPATH_BUTTON_CALENDARIO"),
     'xpath_calendario': os.getenv("XPATH_CALENDARIO")
 }

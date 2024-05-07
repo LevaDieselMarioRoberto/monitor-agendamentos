@@ -30,6 +30,7 @@ class ScraperIpiranga(Scraper):
                 self.navegador.get(VAR['link']) # Login na página principal
                 self.preenche_input(VAR['id_input_login'], VAR['login'], xpath_ou_id='id')
                 self.preenche_input(VAR['id_input_senha'], VAR['senha'], xpath_ou_id='id')
+                sleep(2)
                 self.clica_botao(VAR['xpath_button_entrar'])
                 self.clica_botao(VAR['xpath_button_ribpreto'])
                 self.logger.log(f"Login realizado com sucesso")
@@ -105,31 +106,39 @@ class ScraperIpiranga(Scraper):
         return pedidos_com_erro
     
     def __troca_dia_no_calendario(self, dia):
-            
-        self.navegador.find_element(By.ID, "data").click()  # Encontrar o input de data e abrir o modal
-        sleep(2)
+        tentativa = 1
+        while tentativa <= 3:
+            try:
+                self.clica_botao(VAR['xpath_input_calendario'])
+                sleep(2)
 
-        if dia == 1:
-            self.clica_botao(VAR['xpath_button_calendario_nextmonth'])
-            sleep(2)
-        
-        html_calendario = self.navegador.find_element(By.XPATH, VAR['xpath_calendario']).get_attribute('outerHTML')
-        soup = BeautifulSoup(html_calendario, 'html.parser')    # Analisa o HTML
+                if dia == 1:
+                    self.clica_botao(VAR['xpath_button_calendario_nextmonth'])
+                    sleep(2)
+                
+                html_calendario = self.navegador.find_element(By.XPATH, VAR['xpath_calendario']).get_attribute('outerHTML')
+                soup = BeautifulSoup(html_calendario, 'html.parser')    # Analisa o HTML
 
-        elemento_dia = soup.find('td', string=str(dia))
+                elemento_dia = soup.find('td', string=str(dia))
 
-        # Verifica se o elemento tem a classe "dp_not_in_month"
-        while elemento_dia and 'dp_not_in_month' in elemento_dia.get('class', []):
-            elemento_dia = elemento_dia.find_next('td', string=str(dia))   # Procura pelo próximo elemento
+                # Verifica se o elemento tem a classe "dp_not_in_month"
+                while elemento_dia and 'dp_not_in_month' in elemento_dia.get('class', []):
+                    elemento_dia = elemento_dia.find_next('td', string=str(dia))   # Procura pelo próximo elemento
 
-        # Obtém a posição do elemento do dia seguinte
-        tds_anteriores = elemento_dia.find_all_previous('td')
-        posicao_td = (len(tds_anteriores) % 7) + 1
-        posicao_tr = (len(tds_anteriores) // 7) + 2
+                # Obtém a posição do elemento do dia seguinte
+                tds_anteriores = elemento_dia.find_all_previous('td')
+                posicao_td = (len(tds_anteriores) % 7) + 1
+                posicao_tr = (len(tds_anteriores) // 7) + 2
 
-        xpath_dia_seguinte = f'/html/body/div[8]/table[2]/tbody/tr[{posicao_tr}]/td[{posicao_td}]'
-        self.clica_botao(xpath_dia_seguinte)
-        sleep(2)
+                xpath_dia_seguinte = f'/html/body/div[8]/table[2]/tbody/tr[{posicao_tr}]/td[{posicao_td}]'
+                self.clica_botao(xpath_dia_seguinte)
+                sleep(2)
+                break
+            except:
+                self.logger.log(f"Erro ao trocar o dia no calendário, nova tentativa em 10 segundos...")
+                self.navegador.get(VAR['link_filial_rp'])
+                tentativa += 1
+                sleep(10)    
 
 
 if __name__ == "__main__":

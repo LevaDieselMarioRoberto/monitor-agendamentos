@@ -30,9 +30,9 @@ def main():
             pedidos_json = {'hoje': [], 'amanha': [], 'erro_na_coleta': []}
             with open(ARQUIVO_JSON_PEDIDOS, 'w') as f: json.dump(pedidos_json, f)
 
-        # Verifica se houve erro na coleta e se é diferente do último erro
-        if pedidos_com_erro['erro_na_coleta'] != [] and pedidos_com_erro['erro_na_coleta'] != pedidos_json['erro_na_coleta']:
-            mensagem = f'⚠️ Erro no script: {pedidos_com_erro["erro_na_coleta"]}'
+        # Verifica se houve erro na coleta e antes não havia
+        if pedidos_com_erro['erro_na_coleta'] != [] and pedidos_json['erro_na_coleta'] == []:
+            mensagem = f'⚠️ Erro no script, verifique o log'
             telegram.enviar_mensagem(mensagem)
             logging.error(mensagem)
             pedidos_json['erro_na_coleta'] = pedidos_com_erro['erro_na_coleta']
