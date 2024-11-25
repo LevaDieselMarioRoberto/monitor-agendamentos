@@ -22,7 +22,7 @@ def main():
     # Verificação de horário para execução do script
     if time(1, 30) <= current_time <= time(23, 30):
         logger.log(f"   --- Iniciando verificação... ---")
-        pedidos_com_erro = scraper.verifica_agendamentos(maximizado=False)
+        pedidos_com_erro = scraper.verifica_agendamentos(maximizado=True)
 
         try: 
             with open(ARQUIVO_JSON_PEDIDOS, 'r') as f: pedidos_json = json.load(f)

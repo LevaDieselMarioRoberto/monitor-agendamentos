@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 user = getuser()
 
-BASE_DIR = f"C:/Users/{user}/OneDrive - MARIO ROBERTO TRANSP REVENDEDORA D OLEO DIESEL/Leva Diesel/Informatica/projetos/monitor_agendamentos/"
+BASE_DIR = f"C:/Users/{user}/Documentos/Projetos/monitor_agendamentos/"
 
 ARQUIVO_JSON_PEDIDOS = BASE_DIR + "dist/pedidos.json"
 ARQUIVO_LOG = BASE_DIR + "dist/monitor.log"
